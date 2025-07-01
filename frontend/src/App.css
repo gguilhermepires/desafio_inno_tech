@@ -1,0 +1,196 @@
+/* Reset básico */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #202123; /* Fundo escuro */
+  color: #ececf1; /* Texto claro */
+  height: 100vh;
+  overflow: hidden; /* Evita scroll da página inteira */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Layout principal do aplicativo */
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  max-width: 100%; /* Garante que não haverá overflow horizontal */
+  overflow: hidden;
+}
+
+.App-header {
+  flex-grow: 1; /* Ocupa o espaço restante */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Alinha o conteúdo ao topo */
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto; /* Permite rolagem vertical para o conteúdo */
+  padding-bottom: 120px; /* Espaço para a área de entrada fixa */
+}
+
+/* Estilos para o contêiner de itens */
+.items-container {
+  width: 100%;
+  max-width: 800px; /* Largura máxima para o conteúdo, como no ChatGPT */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Espaçamento entre os itens */
+}
+
+.item-card {
+  background-color: #343541; /* Cor de fundo para cada item */
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.item-card h3 {
+  margin: 0;
+  color: #ececf1;
+}
+
+.item-card p {
+  margin: 0;
+  color: #b4b4b4;
+  font-size: 0.9em;
+}
+
+.item-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.item-actions button {
+  background-color: #444654;
+  color: #ececf1;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.item-actions button:hover {
+  background-color: #565869;
+}
+
+/* Área de entrada fixa na parte inferior */
+.input-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #343541; /* Cor de fundo da área de entrada */
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.input-area-content {
+  width: 100%;
+  max-width: 800px; /* Mesma largura máxima do conteúdo */
+  display: flex;
+  gap: 10px;
+}
+
+.input-area input[type="text"] {
+  flex-grow: 1;
+  padding: 12px 15px;
+  border: 1px solid #444654;
+  border-radius: 8px;
+  background-color: #40414f;
+  color: #ececf1;
+  font-size: 1em;
+  outline: none;
+}
+
+.input-area input[type="text"]::placeholder {
+  color: #8e8e8e;
+}
+
+.input-area button {
+  background-color: #10a37f; /* Cor do botão de envio */
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s;
+}
+
+.input-area button:hover {
+  background-color: #0e8a6f;
+}
+
+/* Estilos para o formulário de edição (se visível) */
+.edit-form {
+  background-color: #343541;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+}
+
+.edit-form h2 {
+  margin-top: 0;
+  color: #ececf1;
+}
+
+.edit-form div {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-form input {
+  padding: 10px 15px;
+  border: 1px solid #444654;
+  border-radius: 5px;
+  background-color: #40414f;
+  color: #ececf1;
+  font-size: 1em;
+  outline: none;
+}
+
+.edit-form button {
+  background-color: #10a37f;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+.edit-form button:last-child {
+  background-color: #dc3545; /* Cor para o botão Cancelar */
+}
+
+.edit-form button:last-child:hover {
+  background-color: #c82333;
+}
