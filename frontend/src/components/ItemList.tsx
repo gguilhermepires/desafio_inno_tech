@@ -4,11 +4,11 @@ import { io, Socket } from 'socket.io-client'; // Import io and Socket type
 
 const ItemList: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
-  const [newItemName, setNewItemName] = useState<string>('');
-  const [newItemDescription, setNewItemDescription] = useState<string>('');
+  const [newItemName, setNewItemName] = useState<string>('qaaa');
+  const [newItemDescription, setNewItemDescription] = useState<string>('aa');
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [updatedItemName, setUpdatedItemName] = useState<string>('');
-  const [updatedItemDescription, setUpdatedItemDescription] = useState<string>('');
+  const [updatedItemDescription, setUpdatedItemDescription] = useState<string>('aaa');
   const [socket, setSocket] = useState<Socket | null>(null); // Change ws to socket and type to Socket
 
   useEffect(() => {
@@ -72,15 +72,18 @@ const ItemList: React.FC = () => {
     }
   };
 
-  const handleCreateItem = () => { // Removed async as we're not awaiting an HTTP response
-    if (!newItemName || !newItemDescription) {
-      alert('Name and Description cannot be empty.');
+  const handleCreateItem = () => {
+    if (!newItemDescription) { // Apenas verifica a descrição, já que o nome será padrão
+      alert('Description cannot be empty.');
       return;
     }
-    if (socket && socket.connected) { // Check socket.connected
-      const newItem: CreateItemDto = { name: newItemName, description: newItemDescription };
-      socket.emit('CREATE_ITEM', newItem); // Use socket.emit
-      setNewItemName('');
+    if (socket && socket.connected) {
+      const newItem: CreateItemDto = {
+        name: 'User Message', // Define um nome padrão para o item
+        description: newItemDescription
+      };
+      socket.emit('CREATE_ITEM', newItem);
+      setNewItemName(''); // Pode manter ou remover, já que não é usado no input
       setNewItemDescription('');
     } else {
       console.error('Socket.IO is not connected.');
