@@ -6,19 +6,15 @@ export class AiService {
   private openai: OpenAI;
 
   constructor() {
-    // OpenAI client will be initialized in getAiResponse method
+    this.openai = new OpenAI({
+      baseURL:  process.env.OPENROUTER_URL,
+      apiKey: process.env.OPENROUTER_API_KEY, // Using environment variable
+    });
   }
 
   async getAiResponse(message: string): Promise<string> {
     try {
-      console.log("line 17");
-      // Initialize OpenAI client directly in the method
-      const client = new OpenAI({
-        baseURL: "https://openrouter.ai/api/v1",
-        apiKey: process.env.OPENROUTER_API_KEY, // Using environment variable
-      });
-
-      const completion = await client.chat.completions.create(
+      const completion = await this.openai.chat.completions.create(
         {
           model: "deepseek/deepseek-r1-0528-qwen3-8b:free", // Updated model
           messages: [

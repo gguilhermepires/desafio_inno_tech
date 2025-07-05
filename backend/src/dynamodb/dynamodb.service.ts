@@ -13,7 +13,6 @@ export class DynamoDBService {
       accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID')!,
       secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY')!,
     };
-    console.log("line 16",credentials);
     if (!credentials.accessKeyId || !credentials.secretAccessKey) {
       throw new Error('AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set in your environment variables.');
     }
