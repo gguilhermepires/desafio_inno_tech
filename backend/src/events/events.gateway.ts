@@ -31,11 +31,20 @@ export class EventsGateway {
   @SubscribeMessage('message')
   async handleCreateItem(@MessageBody() data: CreateItemDto, @ConnectedSocket() client: Socket): Promise<void> {
     console.log(`Received CREATE_ITEM from ${client.id}:`, data);
+    console.log("line 34");
+
     if(!client.id){
       throw Error("clientId empty")
     }
-    await this.dynamodbService.logMessage(client.id, data, 'received');
+    console.log("line 37");
+    const now = new Date()
+    const dataToLog = { id: data.id || now.valueOf(), message:data.message, timestamp: now.toISOString() };
+    console.log("dataLog",dataToLog);
+    
+    await this.dynamodbService.logMessage(client.id, dataToLog, 'received');
     try {
+      console.log("line 42");
+      
         const aiResponseContent = await this.aiService.getAiResponse(data.message);
         console.log("AI Response:", aiResponseContent);
 
@@ -43,21 +52,15 @@ export class EventsGateway {
             id: 'ai-response-' + Date.now(), 
             message: aiResponseContent,
             sender: 'assistant',
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
         };
         this.server.emit('message', aiResponse);
         await this.dynamodbService.logMessage(client.id, aiResponse, 'sent');
 
     } catch (error) {
-        console.error("Error calling OpenRouter AI:", error);
-        const errorResponse = {
-            id: 'error-' + Date.now(),
-            message: "Erro ao processar sua solicitação com a IA.",
-            sender: 'assistant',
-            timestamp: new Date(),
-        };
-        this.server.emit('message', errorResponse);
-        await this.dynamodbService.logMessage(client.id, errorResponse, 'sent');
+        console.error("Caught error in handleCreateItem:", error);
+        // Always ensure a standard Error object is thrown
+        throw new Error(String(error?.message));
     }
   }
 
