@@ -31,6 +31,9 @@ export class EventsGateway {
   @SubscribeMessage('message')
   async handleCreateItem(@MessageBody() data: CreateItemDto, @ConnectedSocket() client: Socket): Promise<void> {
     console.log(`Received CREATE_ITEM from ${client.id}:`, data);
+    if(!client.id){
+      throw Error("clientId empty")
+    }
     await this.dynamodbService.logMessage(client.id, data, 'received');
     try {
         const aiResponseContent = await this.aiService.getAiResponse(data.message);
@@ -60,11 +63,17 @@ export class EventsGateway {
 
   handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
+    if(!client.id){
+      throw new Error('Client ID is required');
+    }
     this.dynamodbService.logConnection(client.id, 'connect');
   }
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+    if(!client.id){
+      throw new Error('Client ID is required');
+    }
     this.dynamodbService.logConnection(client.id, 'disconnect');
   }
 }

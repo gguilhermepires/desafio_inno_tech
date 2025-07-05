@@ -1,41 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DynamoDBService {
   private readonly client: DynamoDBDocumentClient;
-  private readonly tableName: string = "websocket_logs"; 
+  private readonly tableName: string = "WEBSOCKET_LOGS"; 
 
-  constructor() {
+  constructor(private configService: ConfigService) {
+    const credentials = {
+      accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID')!,
+      secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY')!,
+    };
+    console.log("line 16",credentials);
+    if (!credentials.accessKeyId || !credentials.secretAccessKey) {
+      throw new Error('AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set in your environment variables.');
+    }
     const dynamoDBClient = new DynamoDBClient({
-      region: process.env.AWS_REGION, 
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-      },
-    });
+        region: this.configService.get<string>('AWS_REGION'), 
+        credentials
+      });
+    
     this.client = DynamoDBDocumentClient.from(dynamoDBClient);
   }
 
-  async logConnection(clientId: string, type: 'connect' | 'disconnect'): Promise<void> {
+  async logConnection(clientId: string, eventType: 'connect' | 'disconnect'): Promise<void> {
     const timestamp = new Date().toISOString();
     const params = {
       TableName: this.tableName,
       Item: {
-        PK: `CLIENT#${clientId}`,
+        clientId: clientId,
         SK: `CONNECTION#${timestamp}`,
-        EventType: type,
-        ClientId: clientId,
-        Timestamp: timestamp,
+        eventType,
+        timestamp,
       },
     };
 
     try {
       await this.client.send(new PutCommand(params));
-      console.log(`Successfully logged ${type} for client: ${clientId}`);
+      console.log(`Successfully logged ${eventType} for client: ${clientId}`);
     } catch (error) {
-      console.error(`Error logging ${type} for client ${clientId}:`, error);
+      console.error(`Error logging ${eventType} for client ${clientId}:`, error);
     }
   }
 
@@ -44,13 +50,12 @@ export class DynamoDBService {
     const params = {
       TableName: this.tableName,
       Item: {
-        PK: `CLIENT#${clientId}`,
+        clientId: clientId,
         SK: `MESSAGE#${timestamp}`,
-        EventType: 'message',
-        ClientId: clientId,
-        Direction: direction,
-        MessageContent: message,
-        Timestamp: timestamp,
+        eventType: 'message',
+        direction: direction,
+        messageContent: message,
+        timestamp,
       },
     };
 
