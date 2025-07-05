@@ -6,85 +6,76 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import OpenAI from "openai";
 
-// Defina as interfaces para os DTOs esperados do frontend
 interface CreateItemDto {
-  name: string;
-  description: string;
-}
-
-interface UpdateItemDto {
   id: string;
-  data: {
-    name?: string;
-    description?: string;
-  };
-}
-
-interface DeleteItemDto {
-  id: string;
+  message: string;
+  sender: 'user' | 'assistant';
+  timestamp: Date;
 }
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // Permite todas as origens para fins de desenvolvimento. Ajuste em produção.
+    origin: '*', 
   },
 })
 export class EventsGateway {
   @WebSocketServer()
   server: Server;
 
-  // Remova ou renomeie este método se ele não for mais usado para 'message' genérico
-  // @SubscribeMessage('message')
-  // handleMessage(@MessageBody() data: string, @ConnectedSocket() client: Socket): string {
-  //   console.log(`Client ${client.id} sent: ${data}`);
-  //   client.emit('message', `Server received: ${data}`);
-  //   return data;
-  // }
-
-  @SubscribeMessage('CREATE_ITEM')
-  handleCreateItem(@MessageBody() data: CreateItemDto, @ConnectedSocket() client: Socket): void {
+  @SubscribeMessage('message')
+  async handleCreateItem(@MessageBody() data: CreateItemDto, @ConnectedSocket() client: Socket): Promise<void> {
     console.log(`Received CREATE_ITEM from ${client.id}:`, data);
-    // Aqui você adicionaria a lógica para criar o item no seu banco de dados
-    // Por exemplo: const newItem = await this.itemService.create(data);
-    // E então emitiria um evento para todos os clientes sobre o novo item
-    const newItem = { id: Date.now().toString(), ...data }; // Simula um item criado
-    this.server.emit('ITEM_CREATED', newItem); // Notifica todos os clientes
+
+    const openai = new OpenAI({
+      baseURL: "https://openrouter.ai/api/v1", // OpenRouter API base URL
+      apiKey: "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", // Replace with your actual OpenRouter API Key
+    });
+    
+    try {
+        const completion = await openai.chat.completions.create({
+            model: "google/gemini-2.5-flash-lite-preview-06-17", // A commonly available free model on OpenRouter. Check their docs for current free models.
+            messages: [
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": data.message
+                  }
+                ]
+              }
+            ],
+        });
+        
+        const aiResponseContent = completion.choices[0].message.content;
+        console.log("AI Response:", aiResponseContent);
+
+        // Send the AI response back to the client
+        this.server.emit('message', {
+            id: 'ai-response-' + Date.now(), // Generate a unique ID for the AI response
+            message: aiResponseContent,
+            sender: 'ass  istant',
+            timestamp: new Date(),
+        });
+
+    } catch (error) {
+        console.error("Error calling OpenRouter AI:", error);
+        // Optionally, send an error message back to the client
+        this.server.emit('message', {
+            id: 'error-' + Date.now(),
+            message: "Erro ao processar sua solicitação com a IA.",
+            sender: 'assistant',
+            timestamp: new Date(),
+        });
+    }
   }
 
-  @SubscribeMessage('UPDATE_ITEM')
-  handleUpdateItem(@MessageBody() data: UpdateItemDto, @ConnectedSocket() client: Socket): void {
-    console.log(`Received UPDATE_ITEM from ${client.id}:`, data);
-    // Lógica para atualizar o item no banco de dados
-    // Por exemplo: const updatedItem = await this.itemService.update(data.id, data.data);
-    // E então emitiria um evento para todos os clientes sobre o item atualizado
-    const updatedItem = { id: data.id, ...data.data }; // Simula um item atualizado
-    this.server.emit('ITEM_UPDATED', updatedItem); // Notifica todos os clientes
-  }
-
-  @SubscribeMessage('DELETE_ITEM')
-  handleDeleteItem(@MessageBody() data: DeleteItemDto, @ConnectedSocket() client: Socket): void {
-    console.log(`Received DELETE_ITEM from ${client.id}:`, data);
-    // Lógica para deletar o item no banco de dados
-    // Por exemplo: await this.itemService.delete(data.id);
-    // E então emitiria um evento para todos os clientes sobre o item deletado
-    this.server.emit('ITEM_DELETED', { id: data.id }); // Notifica todos os clientes
-  }
-
-  // Exemplo de como enviar uma mensagem para todos os clientes conectados
-  sendToAll(message: string) {
-    this.server.emit('notification', message);
-  }
-
-  // Lida com a conexão de um novo cliente
   handleConnection(client: Socket, ...args: any[]) {
     console.log(`Client connected: ${client.id}`);
-    // Opcional: Enviar itens iniciais para o cliente recém-conectado
-    // const initialItems = await this.itemService.findAll(); // Buscar itens do DB
-    // client.emit('ITEMS_INITIAL_LOAD', initialItems);
   }
 
-  // Lida com a desconexão de um cliente
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
   }
