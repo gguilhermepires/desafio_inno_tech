@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
@@ -30,7 +29,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onNewMess
 
   useEffect(() => {
     // Initialize socket connection
-    socketRef.current = io('http://localhost:3000');
+    socketRef.current = io(import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000');
 
     socketRef.current.on('connect', () => {
       setIsConnected(true);
@@ -81,7 +80,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onNewMess
   }, [messages, isTyping]);
 
   const sendMessage = async () => {
-    if (!inputValue.trim() || !socketRef.current || !isConnected) return;
+    if (!inputValue.trim() || !socketRef.current || !isConnected) {
+        console.log("SendMessage prevented: ", {
+            inputValueEmpty: !inputValue.trim(),
+            socketRefCurrentNull: !socketRef.current,
+            notConnected: !isConnected
+        });
+        return;
+    }
+
+    console.log("Attempting to emit message. socketRef.current:", socketRef.current, "isConnected:", isConnected);
 
     const userMessage: Message = {
       id: Date.now().toString(),
