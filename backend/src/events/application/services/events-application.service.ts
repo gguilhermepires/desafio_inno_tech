@@ -3,7 +3,7 @@ import { AiApplicationService } from 'ai/application/services/ai-application.ser
 import { IMessageLogService } from 'events/domain/interfaces/message-log-service.interface';
 import { IConnectionLogService } from 'events/domain/interfaces/connection-log-service.interface';
 import { Message } from 'events/domain/entities/message';
-import { SenderType, ConnectionType, MessageStatus, AI_RESPONSE_ID_PREFIX } from 'events/domain/constants/events';
+import { SenderType, ConnectionType, MessageStatus } from 'events/domain/constants/events';
 
 @Injectable()
 export class EventsApplicationService {
@@ -20,12 +20,7 @@ export class EventsApplicationService {
     await this.messageLogService.logMessage(clientId, userMessage, MessageStatus.RECEIVED);
 
     const aiResponseContent = await this.aiApplicationService.getAiResponse(messageContent);
-    const aiMessage = new Message(
-      AI_RESPONSE_ID_PREFIX + Date.now(),
-      aiResponseContent,
-      SenderType.ASSISTANT,
-      new Date(),
-    );
+    const aiMessage = Message.createAiResponseMessage(aiResponseContent);
     await this.messageLogService.logMessage(clientId, aiMessage, MessageStatus.SENT);
 
     return aiMessage;
