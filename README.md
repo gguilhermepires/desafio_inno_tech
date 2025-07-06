@@ -21,9 +21,31 @@ O backend é uma aplicação NestJS (Node.js) que serve como a API para a aplica
 
 ### Tecnologias Utilizadas
 
--   **NestJS**: Um framework progressivo para construir aplicações server-side eficientes, confiáveis e escaláveis em Node.js.
--   **TypeScript**: Linguagem de programação que adiciona tipagem estática ao JavaScript.
--   **npm/pnpm**: Gerenciador de pacotes para dependências do Node.js.
+Linguagens e Frameworks:
+NestJS: Framework Node.js para construção de APIs.
+TypeScript: Linguagem de programação.
+Node.js: Plataforma de execução.
+Gerenciadores de Pacote:
+npm
+pnpm
+Bancos de Dados/Serviços Cloud:
+Amazon DynamoDB: Para persistência de dados.
+Inteligência Artificial:
+OpenAI: Para integração com serviços de IA.
+Testes Automatizados: Jest
+Docker
+Orquestração de Contêineres: docker compose
+Controle de Versão: Git com commit semantico
+
+Comunicação Bidirecional/Orientada a Eventos (WebSockets): A presença do módulo events/ e events.gateway.ts, juntamente com as dependências @nestjs/platform-socket.io e @nestjs/websockets, indica a utilização de WebSockets. Isso sugere uma arquitetura que suporta comunicação em tempo real e pode incorporar padrões de arquitetura orientada a eventos para certas funcionalidades.
+
+Integração com Serviços Cloud (AWS DynamoDB): O uso de @aws-sdk/client-dynamodb e @aws-sdk/lib-dynamodb aponta para uma arquitetura que aproveita serviços de banco de dados NoSQL gerenciados na nuvem (DynamoDB). Isso é benéfico para escalabilidade e alta disponibilidade, alinhando-se a princípios de arquitetura cloud-native.
+
+Integração com Serviços Externos (OpenAI): A dependência openai e o módulo ai/ indicam que a aplicação está preparada para se integrar com serviços de inteligência artificial de terceiros, demonstrando uma capacidade de extensão e aproveitamento de funcionalidades externas.
+
+Padrão de Camadas (Controllers, Services): Dentro de cada módulo, o NestJS naturalmente incentiva o padrão de camadas, onde os Controllers lidam com as requisições HTTP e os Services contêm a lógica de negócios e a interação com os dados.
+
+Bibliotecas e Ferramentas de Desenvolvimento:
 
 ### Como Rodar Localmente (Desenvolvimento)
 

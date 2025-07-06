@@ -1,10 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AiService } from './ai.service';
 import { ConfigModule } from '@nestjs/config';
+import { IAiDomainService } from './domain/interfaces/ai-domain-service.interface';
+import { OpenAIAdapter } from './infrastructure/openai/openai.adapter';
+import { AiApplicationService } from '../application/services/ai-application.service';
 
 @Module({
-  imports:[ConfigModule],
-  providers: [AiService],
-  exports: [AiService],
+  imports: [ConfigModule],
+  providers: [
+    AiApplicationService,
+    {
+      provide: 'IAiDomainService',
+      useClass: OpenAIAdapter,
+    },
+  ],
+  exports: [AiApplicationService],
 })
 export class AiModule {} 

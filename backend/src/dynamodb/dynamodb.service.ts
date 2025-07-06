@@ -6,7 +6,6 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class DynamoDBService {
   private readonly client: DynamoDBDocumentClient;
-  private readonly tableName: string = "WEBSOCKET_LOGS"; 
 
   constructor(private configService: ConfigService) {
     const credentials = {
@@ -24,45 +23,18 @@ export class DynamoDBService {
     this.client = DynamoDBDocumentClient.from(dynamoDBClient);
   }
 
-  async logConnection(clientId: string, eventType: 'connect' | 'disconnect'): Promise<void> {
-    const timestamp = new Date().toISOString();
+  async putItem(tableName: string, item: Record<string, any>): Promise<void> {
     const params = {
-      TableName: this.tableName,
-      Item: {
-        clientId: clientId,
-        SK: `CONNECTION#${timestamp}`,
-        eventType,
-        timestamp,
-      },
+      TableName: tableName,
+      Item: item,
     };
 
     try {
       await this.client.send(new PutCommand(params));
-      console.log(`Successfully logged ${eventType} for client: ${clientId}`);
+      console.log(`Successfully put item into ${tableName}:`, item);
     } catch (error) {
-      console.error(`Error logging ${eventType} for client ${clientId}:`, error);
-    }
-  }
-
-  async logMessage(clientId: string, message: any, direction: 'sent' | 'received'): Promise<void> {
-    const timestamp = new Date().toISOString();
-    const params = {
-      TableName: this.tableName,
-      Item: {
-        clientId: clientId,
-        SK: `MESSAGE#${timestamp}`,
-        eventType: 'message',
-        direction: direction,
-        messageContent: message,
-        timestamp,
-      },
-    };
-
-    try {
-      await this.client.send(new PutCommand(params));
-      console.log(`Successfully logged ${direction} message for client: ${clientId}`);
-    } catch (error) {
-      console.error(`Error logging message for client ${clientId}:`, error);
+      console.error(`Error putting item into ${tableName}:`, error);
+      throw new Error(String(error.message));
     }
   }
 } 
