@@ -6,7 +6,7 @@ Este repositório contém uma aplicação full-stack desenvolvida como parte do 
 
 O projeto é dividido em dois diretórios principais:
 
--   `backend/`: Contém o código-fonte da API REST.
+-   `backend/`: Contém o código-fonte da API.
 -   `frontend/`: Contém o código-fonte da interface de usuário baseada em React.
 
 ## Backend (API)
