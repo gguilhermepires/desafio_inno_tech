@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { IAiDomainService } from 'ai/domain/interfaces/ai-domain-service.interface';
 import OpenAI from 'openai';
-import { IAiDomainService } from '../domain/services/ai-domain.service';
 
 @Injectable()
 export class OpenAIAdapter implements IAiDomainService {

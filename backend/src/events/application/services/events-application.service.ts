@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IAiDomainService } from 'ai/domain/interfaces/ai-domain-service.interface';
+import { AiApplicationService } from 'ai/application/services/ai-application.service';
 import { IMessageLogService } from 'events/domain/interfaces/message-log-service.interface';
 import { IConnectionLogService } from 'events/domain/interfaces/connection-log-service.interface';
 import { Message } from 'events/domain/entities/message';
@@ -7,8 +7,7 @@ import { Message } from 'events/domain/entities/message';
 @Injectable()
 export class EventsApplicationService {
   constructor(
-    @Inject('IAiDomainService')
-    private readonly aiDomainService: IAiDomainService,
+    private readonly aiApplicationService: AiApplicationService,
     @Inject('IMessageLogService')
     private readonly messageLogService: IMessageLogService,
     @Inject('IConnectionLogService')
@@ -19,7 +18,7 @@ export class EventsApplicationService {
     const userMessage = new Message(String(Date.now()), messageContent, 'user', new Date());
     await this.messageLogService.logMessage(clientId, userMessage, 'received');
 
-    const aiResponseContent = await this.aiDomainService.getAiResponse(messageContent);
+    const aiResponseContent = await this.aiApplicationService.getAiResponse(messageContent);
     const aiMessage = new Message(
       'ai-response-' + Date.now(),
       aiResponseContent,
