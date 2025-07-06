@@ -6,15 +6,8 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { EventsApplicationService } from './application/services/events-application.service';
-import { Message } from './domain/entities/message';
-
-interface CreateItemDto {
-  id?: string;
-  message: string;
-  sender: 'user' | 'assistant';
-  timestamp?: Date;
-}
+import { EventsApplicationService } from 'events/application/services/events-application.service';
+import { CreateItemDto } from './dto/create-item.dto';
 
 @WebSocketGateway({
   cors: {
@@ -30,32 +23,22 @@ export class EventsGateway {
   @SubscribeMessage('message')
   async handleCreateItem(@MessageBody() data: CreateItemDto, @ConnectedSocket() client: Socket): Promise<void> {
     console.log(`Received CREATE_ITEM from ${client.id}:`, data);
-    if (!client.id) {
-      throw Error("clientId empty");
-    }
-
     try {
       const aiMessage = await this.eventsApplicationService.processMessage(client.id, data.message);
       this.server.emit('message', aiMessage);
     } catch (error) {
-      console.error("Caught error in handleCreateItem:", error);
+      console.error("Error calling OpenRouter AI:", error);
       throw new Error(String(error.message));
     }
   }
 
-  handleConnection(client: Socket, ...args: any[]) {
+  handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    if (!client.id) {
-      throw new Error('Client ID is required');
-    }
     this.eventsApplicationService.logConnection(client.id, 'connect');
   }
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    if (!client.id) {
-      throw new Error('Client ID is required');
-    }
     this.eventsApplicationService.logConnection(client.id, 'disconnect');
   }
 }

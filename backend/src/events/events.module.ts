@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { EventsGateway } from './events.gateway';
+import { EventsGateway } from './presentation/events.gateway';
 import { AiModule } from '../ai/ai.module';
 import { DynamodbModule } from '../dynamodb/dynamodb.module';
 import { EventsApplicationService } from './application/services/events-application.service';
