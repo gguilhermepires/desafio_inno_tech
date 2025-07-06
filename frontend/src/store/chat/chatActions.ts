@@ -1,15 +1,18 @@
 import { AppDispatch, RootState } from '../index';
-import { connectChatSocket, disconnectChatSocket, sendChatMessage } from '../../services/chatService';
+import { chatService } from '../../services/chat';
 import { ToastFunction } from '../../types/utils';
 
-export const connectSocket = (backendUrl: string, toast: ToastFunction) => async (dispatch: AppDispatch, getState: () => RootState) => {
-  connectChatSocket(backendUrl, toast, dispatch);
+export const initiateChatConnection = (backendUrl: string, toast: ToastFunction) =>
+  (dispatch: AppDispatch) => {
+    chatService.connect(backendUrl, toast, dispatch);
+  };
+
+export const terminateChatConnection = () => (dispatch: AppDispatch) => {
+  chatService.disconnect(dispatch);
 };
 
-export const disconnectSocket = () => async (dispatch: AppDispatch) => {
-  disconnectChatSocket(dispatch);
-};
-
-export const sendMessage = (message: string, conversationId: string) => async (dispatch: AppDispatch, getState: () => RootState) => {
-  sendChatMessage(message, conversationId, getState, dispatch);
-}; 
+export const postChatMessage = (message: string, conversationId: string, toast: ToastFunction) =>
+  (dispatch: AppDispatch, getState: () => RootState) => {
+    const state = getState();
+    chatService.sendMessage(message, conversationId, state, dispatch, toast);
+  }; 

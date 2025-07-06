@@ -7,8 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store';
 import { Message } from '../../types/chat';
-import { connectSocket, disconnectSocket, sendMessage as sendChatMessage } from '../../store/chat/chatActions';
 import { selectChatMessages } from '../../store/chat/chatSelectors';
+import { initiateChatConnection, terminateChatConnection, postChatMessage } from '../../store/chat/chatActions';
+import { ToastProps } from '@radix-ui/react-toast';
+import { VariantProps } from 'class-variance-authority';
+import { ClassProp } from 'class-variance-authority/types';
+import { ToastActionElement } from '../ui/toast';
 
 interface ChatInterfaceProps {
   conversationId: string;
@@ -26,10 +30,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onNewMess
 
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-    dispatch(connectSocket(backendUrl, toast));
+    dispatch(initiateChatConnection(backendUrl, toast));
 
     return () => {
-      dispatch(disconnectSocket());
+      dispatch(terminateChatConnection());
     };
   }, [dispatch, toast]);
 
@@ -47,7 +51,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onNewMess
     }
 
     // Dispatch the sendMessage thunk
-    dispatch(sendChatMessage(inputValue, conversationId));
+    dispatch(postChatMessage(inputValue, conversationId, toast));
 
     setInputValue('');
   };
@@ -143,3 +147,4 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onNewMess
 };
 
 export default ChatInterface;
+
