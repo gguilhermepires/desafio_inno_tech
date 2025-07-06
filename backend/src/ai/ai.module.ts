@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { IAiDomainService } from './domain/interfaces/ai-domain-service.interface';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OpenAIAdapter } from './infrastructure/openai/openai.adapter';
 import { AiApplicationService } from './application/services/ai-application.service';
+import { OpenAIMockAdapter } from './infrastructure/openai/openai.mock.adapter';
+
 
 @Module({
   imports: [ConfigModule],
@@ -10,7 +11,11 @@ import { AiApplicationService } from './application/services/ai-application.serv
     AiApplicationService,
     {
       provide: 'IAiDomainService',
-      useClass: OpenAIAdapter,
+      useFactory: (configService: ConfigService) => {
+        const nodeEnv = configService.get<string>('NODE_ENV');
+        return nodeEnv === 'development' ? new OpenAIMockAdapter() : new OpenAIAdapter();
+      },
+      inject: [ConfigService],
     },
   ],
   exports: [AiApplicationService, 'IAiDomainService'],
