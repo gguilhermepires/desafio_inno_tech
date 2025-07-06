@@ -102,7 +102,3 @@ O frontend é uma Single Page Application (SPA) desenvolvida com React e Vite. E
     ```
     A aplicação estará disponível em `http://localhost:8080`.
 
-### Estrutura de Diretórios Relevantes
-
--   `src/`:
-    -   `
