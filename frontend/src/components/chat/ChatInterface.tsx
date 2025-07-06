@@ -1,17 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
-import { io, Socket } from 'socket.io-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'assistant';
-  timestamp: Date;
-}
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store';
+import { Message } from '../../types/chat';
+import { connectSocket, disconnectSocket, sendMessage as sendChatMessage } from '../../store/chat/chatActions';
+import { selectChatMessages } from '../../store/chat/chatSelectors';
 
 interface ChatInterfaceProps {
   conversationId: string;
@@ -19,102 +16,46 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onNewMessage }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isConnected, setIsConnected] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
+  const messages = useSelector(selectChatMessages);
+  const isConnected = useSelector((state: RootState) => state.chat.isConnected);
+  const isTyping = useSelector((state: RootState) => state.chat.isTyping);
+  const dispatch = useDispatch<AppDispatch>();
+  const [inputValue, setInputValue] = React.useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Initialize socket connection
-    socketRef.current = io(import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000');
-
-    socketRef.current.on('connect', () => {
-      setIsConnected(true);
-      console.log('Connected to server');
-      toast({
-        title: "Connected",
-        description: "Connected to chat server successfully",
-      });
-    });
-
-    socketRef.current.on('disconnect', () => {
-      setIsConnected(false);
-      console.log('Disconnected from server');
-    });
-
-    socketRef.current.on('message', (data: { message: string; id: string }) => {
-      const assistantMessage: Message = {
-        id: data.id || Date.now().toString(),
-        text: data.message,
-        sender: 'assistant',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsTyping(false);
-      onNewMessage?.(assistantMessage);
-    });
-
-    socketRef.current.on('typing', () => {
-      setIsTyping(true);
-    });
-
-    socketRef.current.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-      toast({
-        title: "Connection Error",
-        description: "Failed to connect to chat server",
-        variant: "destructive",
-      });
-    });
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    dispatch(connectSocket(backendUrl, toast));
 
     return () => {
-      socketRef.current?.disconnect();
+      dispatch(disconnectSocket());
     };
-  }, [toast, onNewMessage]);
+  }, [dispatch, toast]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const sendMessage = async () => {
-    if (!inputValue.trim() || !socketRef.current || !isConnected) {
-        console.log("SendMessage prevented: ", {
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || !isConnected) {
+        console.log("Send message prevented: ", {
             inputValueEmpty: !inputValue.trim(),
-            socketRefCurrentNull: !socketRef.current,
             notConnected: !isConnected
         });
         return;
     }
 
-    console.log("Attempting to emit message. socketRef.current:", socketRef.current, "isConnected:", isConnected);
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputValue,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    onNewMessage?.(userMessage);
-
-    // Send message to server
-    socketRef.current.emit('message', {
-      message: inputValue,
-      conversationId,
-    });
+    // Dispatch the sendMessage thunk
+    dispatch(sendChatMessage(inputValue, conversationId));
 
     setInputValue('');
-    setIsTyping(true);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleSendMessage();
     }
   };
 
@@ -153,11 +94,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onNewMess
                     : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-                <p className={`text-xs mt-1 ${
-                  message.sender === 'user' ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
-                }`}>
-                  {message.timestamp.toLocaleTimeString()}
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <p className={`text-xs mt-1 ${message.sender === 'user' ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                  {new Date(message.timestamp).toLocaleTimeString()}
                 </p>
               </div>
             </div>
@@ -186,12 +125,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ conversationId, onNewMess
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
             disabled={!isConnected}
+            placeholder="Type your message..."
             className="flex-1"
           />
           <Button
-            onClick={sendMessage}
+            onClick={handleSendMessage}
             disabled={!inputValue.trim() || !isConnected}
             size="icon"
           >

@@ -1,16 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { MessageSquare, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Link } from 'react-router-dom';
-
-interface Conversation {
-  id: string;
-  title: string;
-  lastMessage: string;
-  timestamp: Date;
-}
+import { Conversation } from '../../types/chat';
 
 interface ChatSidebarProps {
   conversations: Conversation[];
@@ -69,10 +63,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     {conversation.title}
                   </p>
                   <p className="text-xs text-gray-400 truncate mt-1">
-                    {conversation.lastMessage}
+                    {conversation.lastContent}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {conversation.timestamp.toLocaleDateString()}
+                    {new Date(conversation.timestamp).toLocaleDateString()}
                   </p>
                 </div>
               </div>

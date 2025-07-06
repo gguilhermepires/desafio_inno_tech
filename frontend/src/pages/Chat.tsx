@@ -1,21 +1,7 @@
-
 import React, { useState, useCallback } from 'react';
-import ChatInterface from '@/components/ChatInterface';
-import ChatSidebar from '@/components/ChatSidebar';
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'assistant';
-  timestamp: Date;
-}
-
-interface Conversation {
-  id: string;
-  title: string;
-  lastMessage: string;
-  timestamp: Date;
-}
+import ChatInterface from '@/components/chat/ChatInterface';
+import ChatSidebar from '@/components/chat/ChatSidebar';
+import { Message, Conversation } from '../types/chat';
 
 const Chat: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -30,10 +16,10 @@ const Chat: React.FC = () => {
         const updated = [...prev];
         updated[existingIndex] = {
           ...updated[existingIndex],
-          lastMessage: message.text,
+          lastContent: message.content,
           timestamp: message.timestamp,
           title: updated[existingIndex].title === 'New Chat' 
-            ? message.text.substring(0, 30) + (message.text.length > 30 ? '...' : '')
+            ? message.content.substring(0, 30) + (message.content.length > 30 ? '...' : '')
             : updated[existingIndex].title
         };
         return updated;
@@ -41,8 +27,8 @@ const Chat: React.FC = () => {
         // Create new conversation
         const newConversation: Conversation = {
           id: activeConversationId,
-          title: message.text.substring(0, 30) + (message.text.length > 30 ? '...' : ''),
-          lastMessage: message.text,
+          title: message.content.substring(0, 30) + (message.content.length > 30 ? '...' : ''),
+          lastContent: message.content,
           timestamp: message.timestamp,
         };
         return [...prev, newConversation];
